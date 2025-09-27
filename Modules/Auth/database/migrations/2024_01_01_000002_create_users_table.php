@@ -27,8 +27,6 @@ return new class extends Migration
             $table->string('avatar')->nullable();
 
             // فیلدهای پروفایل - اصلاح شده
-            $table->foreignId('province_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('city_id')->nullable()->constrained()->onDelete('set null');
             $table->text('address')->nullable(); // اضافه شد
             $table->boolean('is_admin')->default(false)->index();
 
