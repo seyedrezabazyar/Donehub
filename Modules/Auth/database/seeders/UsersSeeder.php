@@ -1,7 +1,7 @@
 <?php
 // database/seeders/UsersSeeder.php
 
-namespace Database\Seeders;
+namespace Modules\Auth\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
