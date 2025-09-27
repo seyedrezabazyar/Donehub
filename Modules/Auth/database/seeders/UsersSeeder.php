@@ -30,8 +30,6 @@ class UsersSeeder extends Seeder
                 'preferred_method' => 'password',
                 'failed_attempts' => 0,
                 'last_login_at' => now(),
-                'province_id' => 1, // Tehran
-                'city_id' => 1, // Tehran city
                 'is_admin' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -109,8 +107,6 @@ class UsersSeeder extends Seeder
                 'preferred_method' => rand(0, 1) ? 'password' : 'otp',
                 'failed_attempts' => 0,
                 'last_login_at' => rand(0, 1) ? now()->subDays(rand(1, 30)) : null,
-                'province_id' => rand(1, 8),
-                'city_id' => rand(1, 18),
                 'is_admin' => false,
                 'created_at' => now()->subDays(rand(1, 365)),
                 'updated_at' => now(),
@@ -132,12 +128,6 @@ class UsersSeeder extends Seeder
 
             // ایجاد device sessions
             $this->createDeviceSession($userId, $username);
-
-            // ایجاد security logs
-            $this->createSecurityLogs($userId, $user['email']);
-
-            // ایجاد login streak
-            $this->createLoginStreak($userId);
         }
 
         $this->command->info('✅ Users seeded successfully!');
@@ -223,41 +213,6 @@ class UsersSeeder extends Seeder
                 'is_trusted' => (bool)rand(0, 1),
                 'last_activity' => now()->subDays(rand(0, 7)),
                 'created_at' => now()->subDays(rand(1, 60)),
-                'updated_at' => now(),
-            ]);
-        }
-    }
-
-    private function createSecurityLogs($userId, $email): void
-    {
-        $events = ['login', 'logout', 'failed_login', 'password_changed'];
-
-        for ($i = 0; $i < rand(3, 8); $i++) {
-            $event = $events[array_rand($events)];
-
-            DB::table('security_logs')->insert([
-                'event_type' => $event,
-                'user_id' => $userId,
-                'identifier' => $email,
-                'ip_address' => $this->generateRandomIP(),
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0',
-                'risk_level' => $event === 'failed_login' ? 'medium' : 'low',
-                'metadata' => json_encode(['browser' => 'Chrome', 'os' => 'Windows']),
-                'created_at' => now()->subDays(rand(1, 30)),
-            ]);
-        }
-    }
-
-    private function createLoginStreak($userId): void
-    {
-        if (rand(0, 1)) {
-            DB::table('daily_login_streaks')->insert([
-                'user_id' => $userId,
-                'current_streak' => rand(0, 30),
-                'longest_streak' => rand(5, 60),
-                'last_login_date' => now()->toDateString(),
-                'total_login_days' => rand(10, 200),
-                'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
