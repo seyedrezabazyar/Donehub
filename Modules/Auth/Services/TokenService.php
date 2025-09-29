@@ -76,18 +76,19 @@ class TokenService
     public function refreshTokens(User $user, PersonalAccessToken $currentToken): array
     {
         try {
-            // بررسی دسترسی refresh
-            if (!in_array('token:refresh', $currentToken->abilities ?? [])) {
-                throw new \Exception('این توکن قابلیت refresh ندارد');
-            }
+            Log::info('Refreshing token', [
+                'token_id' => $currentToken->id,
+                'name' => $currentToken->name,
+                'abilities' => $currentToken->abilities
+            ]);
 
             // بررسی انقضای توکن
             if ($currentToken->expires_at && now()->gt($currentToken->expires_at)) {
                 throw new \Exception('توکن منقضی شده است');
             }
 
-            // حذف توکن فعلی
-            $currentToken->delete();
+            // حذف تمام توکن‌های قبلی کاربر (برای امنیت بیشتر)
+            $user->tokens()->delete();
 
             // ایجاد توکن‌های جدید
             return $this->createTokens($user);

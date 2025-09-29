@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Modules\Auth\Models\User;
 use Modules\Auth\Services\{PhoneService, TokenService, OTPService};
 use Modules\Auth\Actions\PasswordValidationRules;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -247,6 +248,31 @@ class AuthController extends Controller
                 'message' => 'خطا در ورود'
             ], 500);
         }
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['success' => true, 'message' => 'خروج موفق']);
+    }
+
+    public function logoutAll(Request $request): JsonResponse
+    {
+        $this->tokenService->revokeAllTokens($request->user());
+        return response()->json(['success' => true, 'message' => 'از همه دستگاه‌ها خارج شدید']);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        $tokenString = $request->bearerToken(); // مقدار Authorization Bearer
+        $currentToken = PersonalAccessToken::findToken($tokenString);
+
+        if (! $currentToken) {
+            return response()->json(['success' => false, 'message' => 'توکن معتبر نیست'], 401);
+        }
+
+        $tokens = $this->tokenService->refreshTokens($request->user(), $currentToken);
+        return response()->json(['success' => true, 'tokens' => $tokens]);
     }
 
     // سایر متدها...
