@@ -1,0 +1,33 @@
+<?php
+
+namespace Modules\Auth\database\seeders;
+
+use Modules\Auth\Models\User;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+
+        $this->command->info('🌱 Starting database seeding...');
+
+        $this->call([
+            UsersSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            UserProfilesSeeder::class,
+            DeviceSessionsSeeder::class,
+            SocialAccountsSeeder::class,
+        ]);
+
+        // User::factory(10)->create();
+
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
+
+        $this->command->info('✅ Database seeding completed.');
+    }
+}
