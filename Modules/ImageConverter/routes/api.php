@@ -14,4 +14,5 @@ use Modules\ImageConverter\Http\Controllers\ImageConverterController;
 |
 */
 
-Route::post('/convert', [ImageConverterController::class, 'convert']);
+Route::post('/convert', [ImageConverterController::class, 'convert'])
+    ->middleware('throttle:convert');
