@@ -7,40 +7,47 @@ use Illuminate\Support\Facades\Route;
 
 class ImageConverterServiceProvider extends ServiceProvider
 {
-    /**
-     * @var string $moduleName
-     */
     protected $moduleName = 'ImageConverter';
+    protected $moduleNameLower = 'imageconverter';
 
-    /**
-     * Boot the application events.
-     *
-     * @return void
-     */
     public function boot()
     {
+        $this->registerConfig();
         $this->registerRoutes();
+        $this->registerCommands();
     }
 
-    /**
-     * Register the service provider.
-     *
-     * @return void
-     */
     public function register()
     {
-        //
+        $this->app->singleton(
+            \Modules\ImageConverter\Services\ImageConverterService::class
+        );
     }
 
-    /**
-     * Register the module's routes.
-     *
-     * @return void
-     */
     protected function registerRoutes()
     {
         Route::prefix('api/image')
             ->middleware('api')
             ->group(module_path($this->moduleName, '/routes/api.php'));
+    }
+
+    protected function registerConfig()
+    {
+        $this->publishes([
+            module_path($this->moduleName, 'config/config.php') => config_path($this->moduleNameLower . '.php'),
+        ], 'imageconverter-config');
+        $this->mergeConfigFrom(
+            module_path($this->moduleName, 'config/config.php'),
+            $this->moduleNameLower
+        );
+    }
+
+    public function registerCommands()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Modules\ImageConverter\Console\CleanupOldImages::class,
+            ]);
+        }
     }
 }

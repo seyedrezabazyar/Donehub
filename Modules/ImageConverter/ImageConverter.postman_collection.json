@@ -1,0 +1,37 @@
+{
+    "info": {
+        "name": "Image Converter API",
+        "description": "API for converting images to JPG format",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Convert Image",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "image",
+                            "type": "file",
+                            "src": []
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/image/convert",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "image", "convert"]
+                }
+            },
+            "response": []
+        }
+    ]
+}

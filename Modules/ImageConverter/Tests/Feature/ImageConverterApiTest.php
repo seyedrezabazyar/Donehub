@@ -11,57 +11,91 @@ class ImageConverterApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Use a fake disk for testing to avoid actual file operations
         Storage::fake('public');
     }
 
     /**
      * Test successful image conversion.
-     *
-     * @return void
      */
-    public function test_successfully_converts_image()
+    public function test_successfully_converts_png_to_jpg()
     {
-        $file = UploadedFile::fake()->image('test_image.png')->size(100); // 100 KB
+        $file = UploadedFile::fake()->image('test_image.png', 800, 600)->size(100);
 
         $response = $this->postJson('/api/image/convert', [
             'image' => $file,
         ]);
 
-        $response->assertStatus(200);
-        $response->assertJson([
-            'status' => 'success',
-            'message' => 'Image converted successfully to JPG.',
-        ]);
-        $response->assertJsonStructure(['status', 'message', 'download_url']);
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'status',
+                'message',
+                'data' => [
+                    'download_url',
+                    'filename',
+                    'size',
+                    'size_human',
+                    'original_format',
+                    'original_size',
+                    'original_size_human',
+                    'compression_ratio',
+                ]
+            ])
+            ->assertJson([
+                'status' => 'success',
+            ]);
 
-        // Assert that the file was actually stored
-        $data = $response->json();
-        $filePath = str_replace(url('/storage'), 'public', $data['download_url']);
-        Storage::disk('public')->assertExists(str_replace('/storage/', '', $filePath));
+        // Verify filename ends with .jpg
+        $data = $response->json('data');
+        $this->assertStringEndsWith('.jpg', $data['filename']);
     }
 
     /**
-     * Test validation error for a missing image file.
+     * Test conversion with different image formats.
      *
-     * @return void
+     * @dataProvider imageFormatProvider
+     */
+    public function test_converts_various_image_formats($format)
+    {
+        $file = UploadedFile::fake()->image("test_image.{$format}")->size(100);
+
+        $response = $this->postJson('/api/image/convert', [
+            'image' => $file,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['status' => 'success']);
+    }
+
+    public static function imageFormatProvider()
+    {
+        return [
+            'PNG format' => ['png'],
+            'GIF format' => ['gif'],
+            'BMP format' => ['bmp'],
+        ];
+    }
+
+    /**
+     * Test validation error for missing image.
      */
     public function test_returns_validation_error_if_image_is_missing()
     {
         $response = $this->postJson('/api/image/convert', []);
 
-        $response->assertStatus(422);
-        $response->assertJson([
-            'status' => 'error',
-            'message' => 'Validation failed.',
-        ]);
-        $response->assertJsonStructure(['status', 'message', 'errors' => ['image']]);
+        $response->assertStatus(422)
+            ->assertJson([
+                'status' => 'error',
+                'message' => 'Validation failed.',
+            ])
+            ->assertJsonStructure([
+                'status',
+                'message',
+                'errors' => ['image']
+            ]);
     }
 
     /**
-     * Test validation error for a non-image file type.
-     *
-     * @return void
+     * Test validation error for non-image file.
      */
     public function test_returns_validation_error_for_non_image_file()
     {
@@ -71,25 +105,59 @@ class ImageConverterApiTest extends TestCase
             'image' => $file,
         ]);
 
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors('image');
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('image');
     }
 
     /**
-     * Test validation error for an oversized image file.
-     *
-     * @return void
+     * Test validation error for oversized image.
      */
     public function test_returns_validation_error_for_oversized_image()
     {
-        // Create a dummy image file larger than 5MB (5120 KB)
-        $file = UploadedFile::fake()->image('large_image.jpg')->size(6000);
+        config(['imageconverter.max_file_size' => 5120]); // 5MB
+
+        $file = UploadedFile::fake()->image('large_image.jpg')->size(6000); // 6MB
 
         $response = $this->postJson('/api/image/convert', [
             'image' => $file,
         ]);
 
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors('image');
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('image');
+    }
+
+    /**
+     * Test file storage after conversion.
+     */
+    public function test_converted_file_is_stored_in_correct_location()
+    {
+        $file = UploadedFile::fake()->image('test_image.png')->size(100);
+
+        $response = $this->postJson('/api/image/convert', [
+            'image' => $file,
+        ]);
+
+        $response->assertStatus(200);
+
+        $filename = $response->json('data.filename');
+        Storage::disk('public')->assertExists('converted/' . $filename);
+    }
+
+    /**
+     * Test compression ratio calculation.
+     */
+    public function test_compression_ratio_is_calculated()
+    {
+        $file = UploadedFile::fake()->image('test_image.png')->size(500);
+
+        $response = $this->postJson('/api/image/convert', [
+            'image' => $file,
+        ]);
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertArrayHasKey('compression_ratio', $data);
+        $this->assertStringContainsString('%', $data['compression_ratio']);
     }
 }
