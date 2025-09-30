@@ -17,7 +17,7 @@ class ImageConverterService
      */
     public function convert(UploadedFile $file): string
     {
-        // Create a unique filename for the converted image
+        // Create a unique filename to avoid collisions
         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '_' . time() . '.jpg';
         $storagePath = 'public/converted/' . $filename;
 
@@ -30,7 +30,7 @@ class ImageConverterService
         // Encode the image to JPEG format
         $encodedImage = $image->toJpeg();
 
-        // Store the image
+        // Store the image in the specified path
         Storage::put($storagePath, $encodedImage);
 
         // Return the public URL for the stored file

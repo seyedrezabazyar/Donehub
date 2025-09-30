@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\ImageConverter\Http\Controllers\ImageController;
+use Modules\ImageConverter\Http\Controllers\ImageConverterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,4 +14,4 @@ use Modules\ImageConverter\Http\Controllers\ImageController;
 |
 */
 
-Route::post('/convert', ImageController::class);
+Route::post('/convert', [ImageConverterController::class, 'convert']);

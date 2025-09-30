@@ -13,11 +13,6 @@ class ImageConverterServiceProvider extends ServiceProvider
     protected $moduleName = 'ImageConverter';
 
     /**
-     * @var string $moduleNameLower
-     */
-    protected $moduleNameLower = 'imageconverter';
-
-    /**
      * Boot the application events.
      *
      * @return void
