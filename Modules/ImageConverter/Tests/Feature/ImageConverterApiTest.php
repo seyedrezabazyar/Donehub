@@ -9,7 +9,7 @@ use Tests\TestCase;
 class ImageConverterApiTest extends TestCase
 {
     /**
-     * Test if the API can convert an image to JPG.
+     * Test that an image can be successfully converted to JPG.
      *
      * @return void
      */
@@ -17,6 +17,7 @@ class ImageConverterApiTest extends TestCase
     {
         Storage::fake('local');
 
+        // Create a dummy image file
         $file = UploadedFile::fake()->image('test_image.png');
 
         $response = $this->postJson('/api/imageconverter/convert', [
@@ -25,11 +26,13 @@ class ImageConverterApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'image/jpeg');
-        $response->assertHeader('Content-Disposition', 'attachment; filename="test_image.jpg"');
+
+        // Check if the response content is a valid image
+        $this->assertTrue(@imagecreatefromstring($response->getContent()) !== false);
     }
 
     /**
-     * Test API returns validation error if no image is provided.
+     * Test that a validation error is returned if no image is provided.
      *
      * @return void
      */

@@ -38,7 +38,7 @@ class ImageConverterServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the routes.
+     * Register the module's routes.
      *
      * @return void
      */
@@ -46,7 +46,6 @@ class ImageConverterServiceProvider extends ServiceProvider
     {
         Route::prefix('api/' . $this->moduleNameLower)
             ->middleware('api')
-            ->namespace("Modules\\{$this->moduleName}\\Http\\Controllers")
             ->group(module_path($this->moduleName, '/routes/api.php'));
     }
 }

@@ -1,7 +1,7 @@
 {
     "name": "ImageConverter",
     "alias": "imageconverter",
-    "description": "A module for converting images.",
+    "description": "A module to handle image conversion.",
     "keywords": [],
     "priority": 0,
     "providers": [
