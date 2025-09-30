@@ -1,7 +1,7 @@
 {
     "name": "ImageConverter",
     "alias": "imageconverter",
-    "description": "A module for converting images.",
+    "description": "This module provides an API to convert uploaded images to JPEG format.",
     "keywords": [],
     "priority": 0,
     "providers": [
