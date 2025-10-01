@@ -41,16 +41,10 @@ class ImageConverterService
             $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $sanitizedName = $this->sanitizeFilename($originalName);
             $filename = $sanitizedName . '_' . time() . '_' . uniqid() . '.jpg';
-
-            // Define storage path
-            $fullStoragePath = $this->storagePath . '/' . $filename;
-
+        
             // Read and process image
             $image = $this->manager->read($file);
-
-            // Auto-orient image based on EXIF data
-            // Note: Intervention Image v3 handles orientation automatically
-
+        
             // Resize if max dimensions are set
             if ($this->maxWidth || $this->maxHeight) {
                 $image->scale(
@@ -58,22 +52,22 @@ class ImageConverterService
                     height: $this->maxHeight
                 );
             }
-
+        
             // Encode to JPEG with quality setting
             $encodedImage = $image->toJpeg(quality: $this->quality);
-
-            // Store the image
-            Storage::put($fullStoragePath, $encodedImage);
-
+        
+            // Store the image in public/converted
+            Storage::disk('public')->put('converted/' . $filename, $encodedImage);
+        
             // Get file info
-            $fileSize = Storage::size($fullStoragePath);
-            $publicUrl = Storage::url($fullStoragePath);
-
-            // Clean up old files (optional - runs in background)
+            $fileSize = Storage::disk('public')->size('converted/' . $filename);
+            $publicUrl = asset('storage/converted/' . $filename);
+        
+            // Clean up old files (optional)
             if ($this->cleanupDays > 0) {
                 $this->cleanupOldFiles($this->cleanupDays);
             }
-
+        
             return [
                 'success' => true,
                 'filename' => $filename,
@@ -81,10 +75,11 @@ class ImageConverterService
                 'size' => $fileSize,
                 'size_human' => $this->formatBytes($fileSize),
             ];
-
+        
         } catch (Exception $e) {
             throw new Exception('Failed to convert image: ' . $e->getMessage());
         }
+        
     }
 
     /**
