@@ -1,0 +1,6 @@
+<?php
+
+return [
+    'name' => 'Portfolio',
+    'version' => '1.0.0',
+];
