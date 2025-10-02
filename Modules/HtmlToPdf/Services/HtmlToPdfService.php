@@ -13,12 +13,12 @@ class HtmlToPdfService
 
     public function __construct()
     {
-        // Define the storage path for converted PDFs. This could be moved to a config file.
+        // مسیر ذخیره PDF ها در storage/app/public/converted_pdfs
         $this->storagePath = 'converted_pdfs';
     }
 
     /**
-     * Convert the uploaded HTML file to PDF and store it.
+     * تبدیل HTML به PDF با پشتیبانی از منابع خارجی
      *
      * @param UploadedFile $file
      * @return array
@@ -27,29 +27,29 @@ class HtmlToPdfService
     public function convert(UploadedFile $file): array
     {
         try {
-            // Read HTML content from the uploaded file
-            $htmlContent = $file->get();
+            $htmlContent = file_get_contents($file->getRealPath());
 
-            // Sanitize original filename and create a unique new filename
+            // اگر میخوای تصاویر محلی رو هم embed کنی، میتونی این متد رو اضافه کنی
+            $htmlContent = $this->embedLocalImages($htmlContent, dirname($file->getRealPath()));
+
+            // نام فایل PDF
             $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $sanitizedName = $this->sanitizeFilename($originalName);
             $filename = $sanitizedName . '_' . time() . '.pdf';
 
-            // Configure and load HTML into DOMPDF
-            $pdf = PDF::loadHtml($htmlContent)
-                ->setOption(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true])
+            // تبدیل HTML به PDF با اجازه بارگذاری منابع خارجی
+            $pdf = Pdf::loadHtml($htmlContent)
+                ->setOption([
+                    'isRemoteEnabled' => true,      // منابع خارجی فعال
+                    'isHtml5ParserEnabled' => true
+                ])
                 ->setPaper('a4', 'portrait');
 
-            // Get the PDF content as a string
             $output = $pdf->output();
-
-            // Define the full path for storage
             $fullPath = $this->storagePath . '/' . $filename;
 
-            // Store the PDF in the public disk
             Storage::disk('public')->put($fullPath, $output);
 
-            // Get file info
             $fileSize = Storage::disk('public')->size($fullPath);
             $publicUrl = Storage::disk('public')->url($fullPath);
 
@@ -58,29 +58,46 @@ class HtmlToPdfService
                 'filename' => $filename,
                 'url' => $publicUrl,
                 'size' => $fileSize,
+                'original_filename' => $file->getClientOriginalName(),
+                'original_size' => $file->getSize(),
             ];
 
         } catch (Exception $e) {
-            // Rethrow a more specific exception
             throw new Exception('Failed to convert HTML to PDF: ' . $e->getMessage());
         }
     }
 
     /**
-     * Sanitize a filename to make it safe for storage.
-     *
-     * @param string $filename
-     * @return string
+     * امن‌سازی نام فایل برای ذخیره
      */
     protected function sanitizeFilename(string $filename): string
     {
-        // Remove characters that are not letters, numbers, underscores, or hyphens
         $filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename);
-        // Replace multiple underscores or hyphens with a single one
         $filename = preg_replace('/[_-]+/', '_', $filename);
-        // Trim leading/trailing underscores
-        $filename = trim($filename, '_');
-        // Limit filename length to prevent issues
-        return substr($filename, 0, 100);
+        return substr(trim($filename, '_'), 0, 100);
+    }
+
+    /**
+     * تبدیل تصاویر محلی <img src="..."> به Base64
+     */
+    protected function embedLocalImages(string $html, string $baseDir): string
+    {
+        return preg_replace_callback('/<img\s+[^>]*src="([^"]+)"[^>]*>/i', function($matches) use ($baseDir) {
+            $src = $matches[1];
+
+            // اگر لینک اینترنتی است، دست نزن
+            if (preg_match('/^https?:\/\//', $src)) {
+                return $matches[0];
+            }
+
+            $filePath = realpath($baseDir . '/' . $src);
+            if (!$filePath || !file_exists($filePath)) {
+                return $matches[0];
+            }
+
+            $type = pathinfo($filePath, PATHINFO_EXTENSION);
+            $data = base64_encode(file_get_contents($filePath));
+            return preg_replace('/src="[^"]+"/', 'src="data:image/' . $type . ';base64,' . $data . '"', $matches[0]);
+        }, $html);
     }
 }

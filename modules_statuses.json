@@ -1,4 +1,5 @@
 {
     "Auth": true,
-    "ImageConverter": true
+    "ImageConverter": true,
+    "HtmlToPdf": true
 }
