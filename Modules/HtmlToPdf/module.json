@@ -1,0 +1,11 @@
+{
+    "name": "HtmlToPdf",
+    "alias": "htmltopdf",
+    "description": "This module provides an API to convert uploaded HTML files to PDF format.",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\HtmlToPdf\\Providers\\HtmlToPdfServiceProvider"
+    ],
+    "files": []
+}
