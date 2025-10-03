@@ -7,7 +7,7 @@ use Modules\Portfolio\Http\Controllers\ExperienceController;
 use Modules\Portfolio\Http\Controllers\EducationController;
 use Modules\Portfolio\Http\Controllers\ProjectController;
 
-Route::middleware('auth:sanctum')->prefix('portfolio')->group(function () {
+Route::prefix('portfolio')->group(function () {
     Route::get('/', [PortfolioController::class, 'show']);
     Route::post('/', [PortfolioController::class, 'store']);
     Route::put('/{portfolio}', [PortfolioController::class, 'update']);
