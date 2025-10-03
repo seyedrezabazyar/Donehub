@@ -1,0 +1,11 @@
+{
+    "name": "SlugGenerator",
+    "alias": "sluggenerator",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\SlugGenerator\\Providers\\SlugGeneratorServiceProvider"
+    ],
+    "files": []
+}

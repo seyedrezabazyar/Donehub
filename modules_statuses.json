@@ -1,5 +1,6 @@
 {
     "Auth": true,
     "ImageConverter": true,
-    "HtmlToPdf": true
+    "HtmlToPdf": true,
+    "SlugGenerator": true
 }
