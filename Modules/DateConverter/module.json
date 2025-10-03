@@ -1,0 +1,9 @@
+{
+    "name": "DateConverter",
+    "version": "1.0.0",
+    "description": "A module for converting dates between Gregorian, Jalali, and Hijri calendars",
+    "author": "donehub",
+    "providers": [
+        "Modules\\DateConverter\\Providers\\DateConverterServiceProvider"
+    ]
+}

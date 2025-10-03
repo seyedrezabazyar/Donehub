@@ -13,5 +13,18 @@
         "laravel-vite-plugin": "^2.0.0",
         "tailwindcss": "^4.0.0",
         "vite": "^7.0.4"
+    },
+    "name": "donehub",
+    "version": "1.0.0",
+    "description": "<p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",
+    "main": "vite.config.js",
+    "directories": {
+        "test": "tests"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "puppeteer": "^24.23.0"
     }
 }
