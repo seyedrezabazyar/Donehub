@@ -2,6 +2,7 @@
 
 namespace Modules\Portfolio\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Modules\Portfolio\Interfaces\EducationRepositoryInterface;
 use Modules\Portfolio\Interfaces\ExperienceRepositoryInterface;
@@ -16,9 +17,6 @@ use Modules\Portfolio\Repositories\SkillRepository;
 
 class PortfolioServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         $this->mergeConfigFrom(
@@ -32,15 +30,13 @@ class PortfolioServiceProvider extends ServiceProvider
         $this->app->bind(ProjectRepositoryInterface::class, ProjectRepository::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        Route::prefix('api')
+            ->middleware('api')
+            ->group(__DIR__ . '/../routes/api.php');
 
         $this->loadMigrationsFrom(__DIR__ . '/../Database/migrations');
-
         $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'portfolio');
     }
 }
