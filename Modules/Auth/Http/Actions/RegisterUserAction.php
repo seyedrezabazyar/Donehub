@@ -15,11 +15,12 @@ class RegisterUserAction
 
     public function __invoke(RegisterRequest $request): JsonResponse
     {
-        $user = $this->authService->register($request->validated());
+        $result = $this->authService->register($request->validated());
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => new UserResource($user),
+            'user' => new UserResource($result['user']),
+            'token' => $result['token'], // اضافه شد
         ], 201);
     }
 }
