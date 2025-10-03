@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('portfolio_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('level')->nullable(); // یا میشه درصد باشه
+            $table->string('level')->nullable();
             $table->timestamps();
         });
     }
