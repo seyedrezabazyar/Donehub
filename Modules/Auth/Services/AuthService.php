@@ -2,44 +2,81 @@
 
 namespace Modules\Auth\Services;
 
-use Modules\Auth\Contracts\AuthContract;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use Modules\Auth\Interfaces\AuthRepositoryInterface;
 use Modules\Auth\Models\User;
 
-class AuthService implements AuthContract
+class AuthService
 {
-    public function validateUser(User $user, array $abilities = []): bool
+    public function __construct(
+        private AuthRepositoryInterface $repository
+    ) {}
+
+    /**
+     * ثبت‌نام کاربر جدید و صدور توکن
+     *
+     * @param array $data
+     * @return array
+     */
+    public function register(array $data): array
     {
-        if ($user->isLocked()) {
-            return false;
-        }
+        $user = $this->repository->createUser([
+            'username' => $data['username'],
+            'password' => $data['password'],
+        ]);
 
-        if (!empty($abilities)) {
-            return $this->checkAbilities($user, $abilities);
-        }
+        // صدور توکن برای کاربر جدید
+        $tokenName = config('auth.token_name', 'auth_token');
+        $token = $user->createToken($tokenName)->plainTextToken;
 
-        return true;
+        return [
+            'user' => $user,
+            'token' => $token,
+        ];
     }
 
-    public function checkAbilities(User $user, array $abilities): bool
+    /**
+     * ورود کاربر و صدور توکن
+     *
+     * @param array $credentials
+     * @return array
+     * @throws ValidationException
+     */
+    public function login(array $credentials): array
     {
-        $token = $user->currentAccessToken();
+        $user = $this->repository->findByUsername($credentials['username']);
 
-        if (!$token) {
-            return false;
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'username' => ['The provided credentials are incorrect.'],
+            ]);
         }
 
-        foreach ($abilities as $ability) {
-            if (!$token->can($ability)) {
-                return false;
-            }
-        }
+        // حذف توکن‌های قبلی (اختیاری - برای امنیت بیشتر)
+        // $user->tokens()->delete();
 
-        return true;
+        $tokenName = config('auth.token_name', 'auth_token');
+        $token = $user->createToken($tokenName)->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token,
+        ];
     }
 
-    public function getUserPermissions(User $user): array
+    /**
+     * خروج کاربر و حذف توکن
+     *
+     * @param User $user
+     * @return void
+     */
+    public function logout(User $user): void
     {
-        $token = $user->currentAccessToken();
-        return $token ? $token->abilities : [];
+        // حذف توکن فعلی
+        $user->currentAccessToken()->delete();
+
+        // یا حذف همه توکن‌ها:
+        // $user->tokens()->delete();
     }
 }
