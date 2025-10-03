@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Modules\\SlugGenerator\\": "app/",
+            "Modules\\SlugGenerator\\": "",
             "Modules\\SlugGenerator\\Database\\Factories\\": "database/factories/",
             "Modules\\SlugGenerator\\Database\\Seeders\\": "database/seeders/"
         }
