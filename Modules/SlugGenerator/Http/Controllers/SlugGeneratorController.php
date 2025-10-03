@@ -4,53 +4,40 @@ namespace Modules\SlugGenerator\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SlugGeneratorController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Store a newly created slug in storage.
      */
-    public function index()
+    public function store(Request $request)
     {
-        return view('sluggenerator::index');
+        // گرفتن متن ورودی
+        $text = $request->input('text');
+
+        // گرفتن پارامتر اختیاری max_length برای محدود کردن طول اسلاگ
+        $maxLength = $request->input('max_length');
+
+        // بررسی اینکه text وجود داره یا خالی نیست
+        if (!$text) {
+            return response()->json([
+                'error' => 'text field is required'
+            ], 400);
+        }
+
+        // تبدیل متن به slug
+        $slug = Str::slug($text);
+
+        // اگر max_length داده شده باشه و عددی باشه، اسلاگ کوتاه شود
+        if ($maxLength && is_numeric($maxLength)) {
+            $slug = substr($slug, 0, (int)$maxLength);
+        }
+
+        // بازگرداندن پاسخ JSON
+        return response()->json([
+            'original_text' => $text,
+            'slug' => $slug
+        ]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('sluggenerator::create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('sluggenerator::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('sluggenerator::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
 }
