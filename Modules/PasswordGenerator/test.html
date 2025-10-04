@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست ماژول تولید رمز</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        
+        .password-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin: 15px 0;
+            word-break: break-all;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .copy-btn {
+            background: #28a745;
+            padding: 10px 20px;
+            margin-top: 10px;
+            width: auto;
+            display: inline-block;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 تولید رمز عبور تصادفی</h1>
+        
+        <form id="passwordForm">
+            <div class="form-group">
+                <label for="length">طول رمز عبور (۱ تا ۵۰):</label>
+                <input type="number" id="length" name="length" min="1" max="50" value="16" required>
+            </div>
+            
+            <div class="form-group">
+                <label>انتخاب کاراکترها (حداقل یکی):</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="include_numbers" name="include_numbers" checked>
+                        <label for="include_numbers" style="margin: 0; font-weight: normal;">اعداد (0-9)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="include_lowercase" name="include_lowercase" checked>
+                        <label for="include_lowercase" style="margin: 0; font-weight: normal;">حروف کوچک (a-z)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="include_uppercase" name="include_uppercase" checked>
+                        <label for="include_uppercase" style="margin: 0; font-weight: normal;">حروف بزرگ (A-Z)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="include_symbols" name="include_symbols" checked>
+                        <label for="include_symbols" style="margin: 0; font-weight: normal;">سیمبل‌ها (!@#$%^&*)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit">🎲 تولید رمز عبور</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('passwordForm');
+        const resultDiv = document.getElementById('result');
+        
+        // آدرس API - اگه پورت یا آدرس متفاوته، اینجا تغییرش بده
+        const API_URL = 'http://localhost:8000/api/password-generator/generate';
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // نمایش loading
+            resultDiv.className = 'result show';
+            resultDiv.innerHTML = '<p class="loading">در حال تولید رمز عبور...</p>';
+            
+            // جمع‌آوری داده‌ها
+            const formData = {
+                length: parseInt(document.getElementById('length').value),
+                include_numbers: document.getElementById('include_numbers').checked,
+                include_lowercase: document.getElementById('include_lowercase').checked,
+                include_uppercase: document.getElementById('include_uppercase').checked,
+                include_symbols: document.getElementById('include_symbols').checked
+            };
+            
+            try {
+                // ارسال درخواست
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // نمایش رمز تولید شده
+                    resultDiv.className = 'result show success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ رمز عبور با موفقیت تولید شد!</h3>
+                        <div class="password-display" id="generatedPassword">${data.data.password}</div>
+                        <p><strong>طول رمز:</strong> ${data.data.length} کاراکتر</p>
+                        <button class="copy-btn" onclick="copyPassword()">📋 کپی کردن</button>
+                    `;
+                } else {
+                    // نمایش خطا
+                    resultDiv.className = 'result show error';
+                    let errorMessage = data.message;
+                    if (data.errors) {
+                        errorMessage += '<br><br>';
+                        for (let key in data.errors) {
+                            errorMessage += `<p class="error-message">• ${data.errors[key]}</p>`;
+                        }
+                    }
+                    resultDiv.innerHTML = `<h3>❌ خطا!</h3><p>${errorMessage}</p>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result show error';
+                resultDiv.innerHTML = `
+                    <h3>❌ خطا در ارتباط با سرور!</h3>
+                    <p class="error-message">لطفاً مطمئن شوید که سرور Laravel در حال اجرا است:</p>
+                    <code style="display: block; background: white; padding: 10px; border-radius: 5px; margin-top: 10px;">php artisan serve</code>
+                    <p style="margin-top: 10px; font-size: 14px; color: #666;">خطا: ${error.message}</p>
+                `;
+            }
+        });
+        
+        function copyPassword() {
+            const passwordText = document.getElementById('generatedPassword').textContent;
+            navigator.clipboard.writeText(passwordText).then(() => {
+                alert('✅ رمز عبور کپی شد!');
+            }).catch(() => {
+                alert('❌ خطا در کپی کردن!');
+            });
+        }
+    </script>
+</body>
+</html>

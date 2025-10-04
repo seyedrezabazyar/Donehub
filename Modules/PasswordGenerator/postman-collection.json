@@ -1,0 +1,170 @@
+{
+  "info": {
+    "name": "Password Generator Module",
+    "description": "مجموعه تست‌های API ماژول تولید رمز",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Generate Password - All Options",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"length\": 16,\n    \"include_numbers\": true,\n    \"include_lowercase\": true,\n    \"include_uppercase\": true,\n    \"include_symbols\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/password-generator/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "password-generator", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Generate Password - Numbers & Lowercase Only",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"length\": 12,\n    \"include_numbers\": true,\n    \"include_lowercase\": true,\n    \"include_uppercase\": false,\n    \"include_symbols\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/password-generator/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "password-generator", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Generate Password - Uppercase Only",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"length\": 10,\n    \"include_numbers\": false,\n    \"include_lowercase\": false,\n    \"include_uppercase\": true,\n    \"include_symbols\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/password-generator/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "password-generator", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Error - No Options Selected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"length\": 10,\n    \"include_numbers\": false,\n    \"include_lowercase\": false,\n    \"include_uppercase\": false,\n    \"include_symbols\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/password-generator/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "password-generator", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Error - Invalid Length (too long)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"length\": 100,\n    \"include_numbers\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/password-generator/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "password-generator", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Generate Password - Minimum Length",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"length\": 1,\n    \"include_symbols\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/password-generator/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "password-generator", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Generate Password - Maximum Length",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"length\": 50,\n    \"include_numbers\": true,\n    \"include_lowercase\": true,\n    \"include_uppercase\": true,\n    \"include_symbols\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/password-generator/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "password-generator", "generate"]
+        }
+      }
+    }
+  ]
+}

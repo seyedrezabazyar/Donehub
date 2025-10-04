@@ -1,0 +1,16 @@
+{
+    "name": "PasswordGenerator",
+    "alias": "passwordgenerator",
+    "description": "A module for generating random passwords",
+    "keywords": [
+        "password",
+        "generator",
+        "random"
+    ],
+    "priority": 0,
+    "providers": [
+        "Modules\\PasswordGenerator\\Providers\\PasswordGeneratorServiceProvider"
+    ],
+    "files": [],
+    "active": true
+}
