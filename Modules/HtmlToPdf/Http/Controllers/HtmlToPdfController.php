@@ -2,82 +2,43 @@
 
 namespace Modules\HtmlToPdf\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\HtmlToPdf\Services\HtmlToPdfService;
-use Modules\HtmlToPdf\Http\Requests\ConvertHtmlRequest;
-use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HtmlToPdfController extends Controller
 {
-    protected $htmlToPdfService;
+    protected HtmlToPdfService $pdfService;
 
-    public function __construct(HtmlToPdfService $htmlToPdfService)
+    public function __construct(HtmlToPdfService $pdfService)
     {
-        $this->htmlToPdfService = $htmlToPdfService;
+        $this->pdfService = $pdfService;
     }
 
     /**
-     * Handles the HTML to PDF conversion request.
-     *
-     * @param ConvertHtmlRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * تبدیل HTML به PDF و دانلود مستقیم فایل
      */
-    public function convert(ConvertHtmlRequest $request)
+    public function convert(Request $request): StreamedResponse
     {
-        try {
-            $file = $request->file('file');
+        $request->validate([
+            'file' => 'required|file|mimes:html,htm'
+        ]);
 
-            // Get original file info
-            $originalSize = $file->getSize();
-            $originalName = $file->getClientOriginalName();
+        $file = $request->file('file');
 
-            // Convert HTML to PDF
-            $result = $this->htmlToPdfService->convert($file);
+        // تبدیل HTML به PDF
+        $result = $this->pdfService->convert($file);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'File converted successfully to PDF.',
-                'data' => [
-                    'download_url' => url($result['url']),
-                    'filename' => $result['filename'],
-                    'size' => $result['size'],
-                    'size_human' => $this->formatBytes($result['size']),
-                    'original_filename' => $originalName,
-                    'original_size' => $originalSize,
-                    'original_size_human' => $this->formatBytes($originalSize),
-                ]
-            ], 200);
+        // مسیر کامل فایل PDF در storage
+        $pdfPath = storage_path('app/public/converted_pdfs/' . $result['filename']);
 
-        } catch (\Exception $e) {
-            Log::error('HTML to PDF conversion failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'An unexpected error occurred during file conversion.',
-                'error' => config('app.debug') ? $e->getMessage() : 'A server error occurred.',
-            ], 500);
-        }
-    }
-
-    /**
-     * Format bytes to human readable format.
-     *
-     * @param int $bytes
-     * @return string
-     */
-    protected function formatBytes(int $bytes): string
-    {
-        if ($bytes <= 0) {
-            return '0 B';
-        }
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
-        $bytes /= (1 << (10 * $pow));
-
-        return round($bytes, 2) . ' ' . $units[$pow];
+        // Stream کردن فایل برای دانلود مستقیم
+        return response()->streamDownload(function () use ($pdfPath) {
+            readfile($pdfPath);
+        }, $result['filename'], [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $result['filename'] . '"',
+        ]);
     }
 }

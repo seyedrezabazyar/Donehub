@@ -10,34 +10,50 @@ class HtmlToPdfServiceProvider extends ServiceProvider
     protected $moduleName = 'HtmlToPdf';
     protected $moduleNameLower = 'htmltopdf';
 
-    public function boot()
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
         $this->registerConfig();
         $this->registerRoutes();
     }
 
-    public function register()
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
+        // Singleton service for HTML to PDF conversion
         $this->app->singleton(
             \Modules\HtmlToPdf\Services\HtmlToPdfService::class
         );
     }
 
-    protected function registerRoutes()
+    /**
+     * Register module routes.
+     */
+    protected function registerRoutes(): void
     {
-        Route::prefix('api/pdf')
-            ->middleware('api')
-            ->group(module_path($this->moduleName, '/routes/api.php'));
+        if (file_exists($routes = module_path($this->moduleName, 'routes/api.php'))) {
+            Route::prefix('api/pdf')   // مسیر اصلی API
+                ->middleware('api')    // middleware API
+                ->group($routes);
+        }
     }
 
-    protected function registerConfig()
+    /**
+     * Register module configuration.
+     */
+    protected function registerConfig(): void
     {
-        $this->publishes([
-            module_path($this->moduleName, 'config/config.php') => config_path($this->moduleNameLower . '.php'),
-        ], 'htmltopdf-config');
-        $this->mergeConfigFrom(
-            module_path($this->moduleName, 'config/config.php'),
-            $this->moduleNameLower
-        );
+        $configPath = module_path($this->moduleName, 'Config/config.php');
+        if (file_exists($configPath)) {
+            $this->publishes([
+                $configPath => config_path($this->moduleNameLower . '.php'),
+            ], 'htmltopdf-config');
+
+            $this->mergeConfigFrom($configPath, $this->moduleNameLower);
+        }
     }
 }
