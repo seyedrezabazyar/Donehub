@@ -1,0 +1,11 @@
+{
+    "name": "Auth",
+    "alias": "auth",
+    "description": "User authentication module",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Auth\\Providers\\AuthServiceProvider"
+    ],
+    "files": []
+}
